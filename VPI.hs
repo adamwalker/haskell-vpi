@@ -10,6 +10,8 @@ import Data.Functor
 import Data.Int
 import Control.Monad.Trans.Maybe
 import Control.Monad.Trans
+import Data.Bool
+import Numeric
 
 --Task registration
 
@@ -146,4 +148,25 @@ vpiPutValue :: VPIHandle -> VPIValue -> IO VPIHandle
 vpiPutValue hdl value = alloca $ \ptr -> do
     poke ptr value
     c_vpiPutValue hdl ptr nullPtr (delayModeToInt32 NoDelay)
+
+--Higher level helpers
+
+getSignalHandle :: VPIHandle -> String -> IO (Maybe VPIHandle)
+getSignalHandle modH nm = do
+    Just registerIterator <- vpiIterate RegObject modH
+    runMaybeT $ findIt registerIterator
+    where
+    findIt :: VPIHandle -> MaybeT IO VPIHandle
+    findIt registerIterator = do
+        regHandle <- MaybeT $ vpiScan registerIterator
+        thisNm    <- lift   $ vpiGetString NameProperty regHandle
+        case thisNm == nm of
+            True  -> return regHandle
+            False -> findIt registerIterator
+
+boolValue :: Bool -> VPIValue
+boolValue = VPIInteger . bool 0 1 
+
+numericValue :: (Integral a, Show a) => a -> VPIValue
+numericValue = VPIHexString . flip showHex ""
 
