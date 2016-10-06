@@ -151,10 +151,8 @@ vpiPutValue hdl value = alloca $ \ptr -> do
 
 --Higher level helpers
 
-getSignalHandle :: VPIHandle -> String -> IO (Maybe VPIHandle)
-getSignalHandle modH nm = do
-    Just registerIterator <- vpiIterate RegObject modH
-    runMaybeT $ findIt registerIterator
+getHandle :: VPIHandle -> String -> IO (Maybe VPIHandle)
+getHandle modH nm = runMaybeT $ findIt modH
     where
     findIt :: VPIHandle -> MaybeT IO VPIHandle
     findIt registerIterator = do
