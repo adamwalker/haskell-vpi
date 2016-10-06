@@ -102,9 +102,39 @@ foreign import ccall safe "vpi_get_str"
     c_vpiGetString :: CInt -> Ptr CVPIHandle -> IO CString
 
 data Property
-    = NameProperty
+    = UndefinedProperty
+    | TypeProperty
+    | NameProperty
+    | FullNameProperty
+    | SizeProperty
+    | FileProperty
+    | LineNoProperty
+    | TopModuleProperty
+    | CellInstanceProperty
+    | DefNameProperty
+    | TimeUnitProperty
+    | TimePrecisionProperty
+    | DefFileProperty
+    | DefLineNoProperty
+    | ScalarProperty
+    | VectorProperty
 
-propertyToInt32 NameProperty = 2
+propertyToInt32 UndefinedProperty     = -1
+propertyToInt32 TypeProperty          = 1
+propertyToInt32 NameProperty          = 2
+propertyToInt32 FullNameProperty      = 3
+propertyToInt32 SizeProperty          = 4
+propertyToInt32 FileProperty          = 5
+propertyToInt32 LineNoProperty        = 6
+propertyToInt32 TopModuleProperty     = 7
+propertyToInt32 CellInstanceProperty  = 8
+propertyToInt32 DefNameProperty       = 9
+propertyToInt32 TimeUnitProperty      = 11
+propertyToInt32 TimePrecisionProperty = 12
+propertyToInt32 DefFileProperty       = 15
+propertyToInt32 DefLineNoProperty     = 16
+propertyToInt32 ScalarProperty        = 17
+propertyToInt32 VectorProperty        = 18
 
 vpiGetString :: Property -> VPIHandle -> IO String
 vpiGetString prop (VPIHandle ref) = do
