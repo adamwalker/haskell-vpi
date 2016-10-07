@@ -143,27 +143,50 @@ vpiGetString prop (VPIHandle ref) = do
 
 --VPI values
 data VPIValue
-    = VPIInteger   CInt
+    = VPIBinString String
+    | VPIOctString String
+    | VPIDecString String
     | VPIHexString String
-    | VPIBinString String
+    | VPIInteger   CInt
+    | VPIReal      CFloat
+    | VPIString    String
 
 instance Storable VPIValue where
     sizeOf    _                  = 12
     alignment _                  = alignment (0 :: Float)
     peek                         = undefined
 
-    poke      ptr (VPIInteger x) = do
-        poke (ptr `plusPtr` 0) (6 :: CInt)
-        poke (ptr `plusPtr` 8) x
+    poke      ptr (VPIBinString x) = do
+        str <- newCString x --TODO: free it
+        poke (ptr `plusPtr` 0) (1 :: CInt)
+        poke (ptr `plusPtr` 8) str
+
+    poke      ptr (VPIOctString x) = do
+        str <- newCString x --TODO: free it
+        poke (ptr `plusPtr` 0) (2 :: CInt)
+        poke (ptr `plusPtr` 8) str
+
+    poke      ptr (VPIDecString x) = do
+        str <- newCString x --TODO: free it
+        poke (ptr `plusPtr` 0) (3 :: CInt)
+        poke (ptr `plusPtr` 8) str
 
     poke      ptr (VPIHexString x) = do
         str <- newCString x --TODO: free it
         poke (ptr `plusPtr` 0) (4 :: CInt)
         poke (ptr `plusPtr` 8) str
 
-    poke      ptr (VPIBinString x) = do
+    poke      ptr (VPIInteger x) = do
+        poke (ptr `plusPtr` 0) (6 :: CInt)
+        poke (ptr `plusPtr` 8) x
+
+    poke      ptr (VPIReal x) = do
+        poke (ptr `plusPtr` 0) (7 :: CInt)
+        poke (ptr `plusPtr` 8) x
+
+    poke      ptr (VPIString x) = do
         str <- newCString x --TODO: free it
-        poke (ptr `plusPtr` 0) (1 :: CInt)
+        poke (ptr `plusPtr` 0) (8 :: CInt)
         poke (ptr `plusPtr` 8) str
 
 foreign import ccall safe "vpi_put_value"
