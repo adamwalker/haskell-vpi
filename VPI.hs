@@ -168,6 +168,20 @@ foreign import ccall safe "vpi_scan"
 vpiScan :: VPIHandle -> IO (Maybe VPIHandle)
 vpiScan (VPIHandle hdl) = fmap VPIHandle <$> nothingOnNull <$> c_vpiScan hdl
 
+foreign import ccall safe "vpi_handle_by_index"
+    c_vpiHandleByIndex :: Ptr CVPIHandle -> CInt -> IO (Ptr CVPIHandle)
+
+vpiHandleByIndex :: VPIHandle -> Int -> IO (Maybe VPIHandle)
+vpiHandleByIndex (VPIHandle ptr) idx = fmap VPIHandle <$> nothingOnNull <$> c_vpiHandleByIndex ptr (fromIntegral idx)
+
+foreign import ccall safe "vpi_handle_by_name"
+    c_vpiHandleByName :: CString -> Ptr CVPIHandle -> IO (Ptr CVPIHandle)
+
+--This doesn't seem to actually work. Use getHandle below.
+vpiHandleByName :: String -> VPIHandle -> IO (Maybe VPIHandle)
+vpiHandleByName str (VPIHandle ptr) = fmap (fmap VPIHandle) $ fmap nothingOnNull $ withCAString str $ \strPtr -> 
+    c_vpiHandleByName strPtr ptr
+
 foreign import ccall safe "vpi_get_str"
     c_vpiGetString :: CInt -> Ptr CVPIHandle -> IO CString
 
