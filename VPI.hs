@@ -21,7 +21,8 @@ module VPI (
     getValueInt,
     getValueHex,
     SysTF(..),
-    registerFunc
+    registerFunc,
+    writePipe
     ) where
 
 import Foreign.C.Types
@@ -36,6 +37,9 @@ import Control.Monad.Trans
 import Data.Bool
 import Numeric
 import Data.IORef
+
+import Pipes
+import qualified Pipes.Prelude as P
 
 --Task registration
 
@@ -380,3 +384,11 @@ registerFunc name SysTF{..} initialState = do
 
     registerTF $ VPISystfData SysTask 0 name callFunction (Just compileFunction) Nothing nullPtr
 
+writePipe :: (a -> IO ()) -> Producer a IO r -> IO (Producer a IO r)
+writePipe updater prod = do
+    xE <- next prod
+    case xE of
+        Left  _            -> return prod
+        Right (val, prod') -> do
+            updater val
+            return prod'
