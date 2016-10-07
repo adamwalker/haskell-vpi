@@ -255,7 +255,7 @@ data VPIValue
     | VPIString    String
 
 instance Storable VPIValue where
-    sizeOf    _                  = 12
+    sizeOf    _                  = 16
     alignment _                  = alignment (0 :: Float)
     peek                         = undefined
 
