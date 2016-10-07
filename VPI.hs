@@ -1,4 +1,4 @@
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE RecordWildCards, ExistentialQuantification #-}
 module VPI (
     SysTFType(..),
     VPISystfData(..),
@@ -19,7 +19,9 @@ module VPI (
     boolValue,
     numericValue,
     getValueInt,
-    getValueHex
+    getValueHex,
+    SysTF(..),
+    registerFunc
     ) where
 
 import Foreign.C.Types
@@ -33,6 +35,7 @@ import Control.Monad.Trans.Maybe
 import Control.Monad.Trans
 import Data.Bool
 import Numeric
+import Data.IORef
 
 --Task registration
 
@@ -352,4 +355,28 @@ boolValue = VPIInteger . bool 0 1
 
 numericValue :: (Integral a, Show a) => a -> VPIValue
 numericValue = VPIHexString . flip showHex ""
+
+data SysTF b = forall a. SysTF {
+    compileFunc :: IO a,
+    callFunc    :: a -> b -> IO b
+}
+
+registerFunc :: String -> SysTF b -> b -> IO VPIHandle
+registerFunc name SysTF{..} initialState = do
+    compiledRef <- newIORef (error "compilation results used before available")
+    stateRef    <- newIORef initialState
+
+    let compileFunction _ = do
+            compiled <- compileFunc 
+            writeIORef compiledRef compiled
+            return 1
+
+        callFunction _ = do
+            compiled <- readIORef compiledRef
+            state    <- readIORef stateRef
+            state'   <- callFunc compiled state
+            writeIORef stateRef state'
+            return 1
+
+    registerTF $ VPISystfData SysTask 0 name callFunction (Just compileFunction) Nothing nullPtr
 
