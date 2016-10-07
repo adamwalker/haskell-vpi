@@ -75,11 +75,81 @@ registerTF tf = alloca $ \ptr -> do
 --Object handling
 
 data ObjectCode
-    = RegObject
+    = ConstantObject
+    | FunctionObject
+    | IntegerVarObject
+    | IteratorObject
+    | MemoryObject
+    | MemoryWordObject
+    | ModPathObject
     | ModuleObject
+    | NamedBeginObject
+    | NamedEventObject
+    | NamedForkObject
+    | NetObject
+    | ParameterObject
+    | PartSelectObject
+    | PathTermObject
+    | PortObject
+    | RealVarObject
+    | RegObject
+    | SysFuncCallObject
+    | SysTaskCallObject
+    | TaskObject
+    | TimeVarObject
+    | UdpDefnObject
+    | UserSystfObject
+    | NetArrayObject
+    | IndexObject
+    | LeftRangeObject
+    | ParentObject
+    | RightRangeObject
+    | ScopeObject
+    | SysTfCallObject
+    | ArgumentObject
+    | InternalScopeObject
+    | ModPathInObject
+    | ModPathOutObject
+    | VariablesObject
+    | ExprObject
 
-objCodeToInt32 RegObject    = 48
-objCodeToInt32 ModuleObject = 32
+objectCodeToInt32 ConstantObject      = 7
+objectCodeToInt32 FunctionObject      = 20
+objectCodeToInt32 IntegerVarObject    = 25
+objectCodeToInt32 IteratorObject      = 27
+objectCodeToInt32 MemoryObject        = 29
+objectCodeToInt32 MemoryWordObject    = 30
+objectCodeToInt32 ModPathObject       = 31
+objectCodeToInt32 ModuleObject        = 32
+objectCodeToInt32 NamedBeginObject    = 33
+objectCodeToInt32 NamedEventObject    = 34
+objectCodeToInt32 NamedForkObject     = 35
+objectCodeToInt32 NetObject           = 36
+objectCodeToInt32 ParameterObject     = 41
+objectCodeToInt32 PartSelectObject    = 42
+objectCodeToInt32 PathTermObject      = 43
+objectCodeToInt32 PortObject          = 44
+objectCodeToInt32 RealVarObject       = 47
+objectCodeToInt32 RegObject           = 48
+objectCodeToInt32 SysFuncCallObject   = 56
+objectCodeToInt32 SysTaskCallObject   = 57
+objectCodeToInt32 TaskObject          = 59
+objectCodeToInt32 TimeVarObject       = 63
+objectCodeToInt32 UdpDefnObject       = 66
+objectCodeToInt32 UserSystfObject     = 67
+objectCodeToInt32 NetArrayObject      = 114
+objectCodeToInt32 IndexObject         = 78
+objectCodeToInt32 LeftRangeObject     = 79
+objectCodeToInt32 ParentObject        = 81
+objectCodeToInt32 RightRangeObject    = 83
+objectCodeToInt32 ScopeObject         = 84
+objectCodeToInt32 SysTfCallObject     = 85
+objectCodeToInt32 ArgumentObject      = 89
+objectCodeToInt32 InternalScopeObject = 92
+objectCodeToInt32 ModPathInObject     = 95
+objectCodeToInt32 ModPathOutObject    = 96
+objectCodeToInt32 VariablesObject     = 100
+objectCodeToInt32 ExprObject          = 102
 
 nothingOnNull :: Ptr a -> Maybe (Ptr a)
 nothingOnNull ptr 
@@ -90,7 +160,7 @@ foreign import ccall safe "vpi_iterate"
     c_vpiIterate :: CInt -> Ptr CVPIHandle -> IO (Ptr CVPIHandle)
 
 vpiIterate :: ObjectCode -> VPIHandle -> IO (Maybe VPIHandle)
-vpiIterate typ (VPIHandle hdl) = fmap VPIHandle <$> nothingOnNull <$> (c_vpiIterate (objCodeToInt32 typ) hdl)
+vpiIterate typ (VPIHandle hdl) = fmap VPIHandle <$> nothingOnNull <$> (c_vpiIterate (objectCodeToInt32 typ) hdl)
 
 foreign import ccall safe "vpi_scan"
     c_vpiScan :: Ptr CVPIHandle -> IO (Ptr CVPIHandle)
