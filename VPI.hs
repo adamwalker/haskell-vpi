@@ -17,7 +17,9 @@ module VPI (
     vpiPutValue,
     getHandle,
     boolValue,
-    numericValue
+    numericValue,
+    getValueInt,
+    getValueHex
     ) where
 
 import Foreign.C.Types
@@ -292,6 +294,17 @@ instance Storable VPIValue where
         poke (ptr `plusPtr` 0) (8 :: CInt)
         poke (ptr `plusPtr` 8) str
 
+pokeFormat :: Ptr VPIValue -> Int32 -> IO ()
+pokeFormat ptr = poke (ptr `plusPtr` 0)
+
+peekInteger :: Ptr VPIValue -> IO CInt
+peekInteger ptr = peek (ptr `plusPtr` 8)
+
+peekString :: Ptr VPIValue -> IO String
+peekString ptr = do
+    ptr <- peek (ptr `plusPtr` 8)
+    peekCAString ptr
+
 foreign import ccall safe "vpi_put_value"
     c_vpiPutValue :: VPIHandle -> Ptr VPIValue -> Ptr () -> CInt -> IO VPIHandle
 
@@ -304,6 +317,22 @@ vpiPutValue :: VPIHandle -> VPIValue -> IO VPIHandle
 vpiPutValue hdl value = alloca $ \ptr -> do
     poke ptr value
     c_vpiPutValue hdl ptr nullPtr (delayModeToInt32 NoDelay)
+
+--Getting values
+foreign import ccall safe "vpi_get_value"
+    c_vpiGetValue :: Ptr CVPIHandle -> Ptr VPIValue -> IO ()
+
+getValueInt :: VPIHandle -> IO CInt
+getValueInt (VPIHandle hPtr) = alloca $ \valPtr -> do
+    pokeFormat valPtr 6
+    c_vpiGetValue hPtr valPtr 
+    peekInteger valPtr
+
+getValueHex :: VPIHandle -> IO String
+getValueHex (VPIHandle hPtr) = alloca $ \valPtr -> do
+    pokeFormat valPtr 4
+    c_vpiGetValue hPtr valPtr
+    peekString valPtr
 
 --Higher level helpers
 
