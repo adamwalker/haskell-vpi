@@ -1,5 +1,24 @@
 {-# LANGUAGE RecordWildCards #-}
-module VPI where
+module VPI (
+    SysTFType(..),
+    VPISystfData(..),
+    VPIHandle,
+    nullVPIHandle,
+    registerTF,
+    ObjectCode(..),
+    vpiIterate,
+    vpiScan,
+    vpiHandleByIndex,
+    vpiHandleByName,
+    Property(..),
+    vpiGetString,
+    VPIValue(..),
+    DelayMode(..),
+    vpiPutValue,
+    getHandle,
+    boolValue,
+    numericValue
+    ) where
 
 import Foreign.C.Types
 import Foreign.C.String
